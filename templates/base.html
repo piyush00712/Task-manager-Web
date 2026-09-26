@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{% block title %}Task Manager{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+<script>
+  // Apply saved theme before paint, so there's no flash of the wrong theme.
+  (function () {
+    try {
+      var saved = localStorage.getItem('theme');
+      if (saved === 'light' || saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+<div class="statusbar">
+  <div>task-manager-cli</div>
+  <div class="statusbar-right">
+    <span>{{ counts.pending }} pending &middot; {{ counts.done }} done</span>
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">dark mode</button>
+  </div>
+</div>
+
+<main>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash-list">
+        {% for message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('theme-toggle');
+
+    function currentlyDark() {
+      var attr = root.getAttribute('data-theme');
+      if (attr === 'dark') return true;
+      if (attr === 'light') return false;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function syncLabel() {
+      var dark = currentlyDark();
+      btn.textContent = dark ? 'light mode' : 'dark mode';
+      btn.setAttribute('aria-pressed', String(dark));
+    }
+
+    btn.addEventListener('click', function () {
+      var next = currentlyDark() ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      syncLabel();
+    });
+
+    syncLabel();
+  })();
+</script>
+</body>
+</html>

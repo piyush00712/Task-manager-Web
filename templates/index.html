@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Task Manager{% endblock %}
+{% block content %}
+<h1>Task Manager</h1>
+<p class="lede">A small CLI tool, given a browser. Same task.py / manager.py underneath — this page just calls TaskManager directly instead of going through argparse.</p>
+
+<div class="panel">
+  <h2>add a task</h2>
+  <form method="post" action="{{ url_for('add') }}">
+    <div class="field">
+      <input type="text" name="title" placeholder="What needs doing?" autofocus required>
+    </div>
+    <button type="submit">Add</button>
+  </form>
+</div>
+
+<div class="tabs">
+  <a href="{{ url_for('index', view='all') }}" class="{{ 'active' if view == 'all' }}">all <span class="count">{{ counts.all }}</span></a>
+  <a href="{{ url_for('index', view='pending') }}" class="{{ 'active' if view == 'pending' }}">pending <span class="count">{{ counts.pending }}</span></a>
+  <a href="{{ url_for('index', view='done') }}" class="{{ 'active' if view == 'done' }}">done <span class="count">{{ counts.done }}</span></a>
+</div>
+
+<ul class="task-list">
+  {% for task in tasks %}
+  <li class="task {{ 'is-done' if task.done }}">
+    <form method="post" action="{{ url_for('complete', task_id=task.id) }}?view={{ view }}" class="task-check">
+      <button type="submit" class="checkbox" aria-label="Toggle complete">{{ '✓' if task.done else '' }}</button>
+    </form>
+
+    <span class="task-id">#{{ task.id }}</span>
+
+    <form method="post" action="{{ url_for('update', task_id=task.id) }}?view={{ view }}" class="task-title-form">
+      <input type="text" name="title" value="{{ task.title }}" class="task-title-input">
+    </form>
+
+    <form method="post" action="{{ url_for('delete', task_id=task.id) }}?view={{ view }}" class="task-delete">
+      <button type="submit" aria-label="Delete task">&times;</button>
+    </form>
+  </li>
+  {% else %}
+  <li class="empty">No tasks here.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
